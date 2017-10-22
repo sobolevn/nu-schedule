@@ -1,9 +1,25 @@
-# nu-schedule-gui
-A simple Python based gui solution for generating course schedule at Nazarbayev University
+# nu-schedule 0.0.2 #
 
-# Requirements
-* Ready Python 3+ environment, which was added to the system's PATH
-* openpyxl: pip3 install openpyxl
-* PyQt5: pip3 install PyQt5
+This is a simple GUI application which utilizes the power of Python to help NU students with the time-consuming registration process.
 
-# How-Tos
+## How do I get set up? ##
+
+* Setup Python 3 environment and add it to the PATH.
+
+* Install the required modules:
+		pip3 install -r requirements.txt
+
+## TODOs ##
+
+* Implement "linking" (binding R's together with L's for a specific teacher) 
+	// Probably filter out the final results with a specific list or a GUI solution
+* Help and about windows fun
+* Improve database creation (mainly dealing with slow parser engine)
+	
+	// Multithreading???
+	
+	// True db???
+	
+	// without PM: pip install ciso8601 (https://github.com/closeio/ciso8601) (https://hack.close.io/posts/ciso8601) https://stackoverflow.com/questions/13468126/a-faster-strptime http://ze.phyr.us/faster-strptime/
+	 
+* Make a compact executable (in short, force nuitka to work)
