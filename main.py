@@ -12,8 +12,7 @@ from sys import exit, argv
 from time import strptime
 from datetime import datetime
 
-from openpyxl import load_workbook
-from openpyxl.utils.exceptions import InvalidFileException
+import xlrd
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                              QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
@@ -93,7 +92,7 @@ class UI(QWidget):
 
     def on_help_clicked(self):
         d = QDialog()
-        l1 = QLabel("1. Get a clearly formatted course list\nfor this I recommend the program called PDF2XL,\nhave a look at the sample list in the /samples folder.\n2. Select the xlsx file with the Open button, wait for it\nto load, the app can be unresponsive.\n3. With Edit button select the needed courses,\nthey will appear on the Main window.\n4. Use Generate button to generate and\n save your schedule as result.txt")
+        l1 = QLabel("1. Get a clearly formatted course list\nfor this I recommend the program called PDF2XL,\nhave a look at the sample list in the /samples folder.\n2. Select the xlsx/xls file with the Open button, wait for it\nto load, the app can be unresponsive.\n3. With Edit button select the needed courses,\nthey will appear on the Main window.\n4. Use Generate button to generate and\n save your schedule as result.txt")
         b1 = QPushButton("Ok", d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
@@ -163,26 +162,23 @@ class UI(QWidget):
         """ File openning procedure """
         
         try:
-            self.label.setText('Loading... Please wait, the app can be unresponsive')
+            self.label.setText('Loading... Please wait')
             name = QFileDialog.getOpenFileName(self, 'Open File')
-            book = load_workbook(str(name[0]), data_only=True, read_only=True)
-            sheet = book.worksheets[0]
+
+            book = xlrd.open_workbook(str(name[0]))
+            sheet = book.sheet_by_index(0)
+            
             if self.checkxl(sheet):
-                info(
-                    'Input file ' + str(name[0]) + ' was successfully read.')
+                info('Input file ' + str(name[0]) + ' was successfully read.')
 
                 courses = list()
                 
-                for i in range(2, sheet.max_row):
-                    courses.append(
-                        Course(
-                            sheet.cell(row=i, column=1).value, sheet.cell(
-                                row=i, column=2).value,
-                            sheet.cell(row=i, column=3).value, sheet.cell(
-                                row=i, column=5).value, sheet.cell(
-                                row=i, column=8).value,
-                            sheet.cell(row=i, column=9).value, sheet.cell(row=i, column=12).value, sheet.cell(row=i, column=13).value))
-
+                for i in range(1, sheet.nrows):
+                    courses.append(Course(
+                            sheet.cell_value(i, 0), sheet.cell_value(i, 1),
+                            sheet.cell_value(i, 2), sheet.cell_value(i, 4), sheet.cell_value(i, 7),
+                            sheet.cell_value(i, 8), sheet.cell_value(i, 11), sheet.cell_value(i, 12)))
+             
                 self.label.setText('File successfully loaded')
                 self.done_dialog()
                 courses = self.groupabbr(courses)
@@ -192,8 +188,9 @@ class UI(QWidget):
             self.label.setText('Problems with the input file')
             info(
                 'Problems with the input file')
-        except InvalidFileException:
-            self.label.setText('Unsupported file format')  
+        except Exception as e:
+            print(e)
+            info(e)  
 
     def on_gen_clicked(self):
         
@@ -221,8 +218,8 @@ class UI(QWidget):
     def checkxl(self, sheet):
         
         """ A simple check to compare the input file's properties to the "standard's" """
-        
-        return sheet.cell(row=1, column=1).value == 'Course Abbr' and sheet.max_column == 13
+
+        return str(sheet.cell_value(0, 0)) == 'Course Abbr' and sheet.ncols == 13
 
     def groupabbr(self, inlist):
         
@@ -250,7 +247,7 @@ class UI(QWidget):
         # Defining buttons
         # -------------------------------------
         info('Defining buttons')
-        open_button = QPushButton("Open xlsx and load it")
+        open_button = QPushButton("Open xlsx/xls and load it")
         add_button = QPushButton("Edit needed courses")
         help_button = QPushButton("Help")
         about_button = QPushButton("About")

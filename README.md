@@ -1,4 +1,4 @@
-# nu-schedule 0.0.2 #
+# nu-schedule 0.0.3 #
 
 This is a simple GUI application which utilizes the power of Python to help NU students with the time-consuming registration process.
 
@@ -21,14 +21,7 @@ python3 main.py
 * Implement "linking" (binding R's together with L's for a specific teacher) 
 
 	// Probably filter out the final results with a specific list or a GUI solution
-	
-* Help and about windows fun
-* Improve database creation (mainly dealing with slow parser engine) and fix its CPU usage
-		
-	// Multithreading???
-	
-	// True db???
-	
-	// without PM: pip install ciso8601 (https://github.com/closeio/ciso8601) (https://hack.close.io/posts/ciso8601) https://stackoverflow.com/questions/13468126/a-faster-strptime http://ze.phyr.us/faster-strptime/
+
+* Create true database for more robust experience?
 	 
 * Make a compact executable (in short, force nuitka to work)
