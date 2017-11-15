@@ -18,10 +18,10 @@ python3 main.py
 
 ## TODOs ##
 
-* Implement "linking" (binding R's together with L's for a specific teacher) 
+* Implement __linking__ (binding R's together with L's for a specific teacher) 
 
 	// Probably filter out the final results with a specific list or a GUI solution
 
-* Create true database for more robust experience?
+* Create a __true__ database for more robust experience?
 	 
 * Make a compact executable (in short, force nuitka to work)
