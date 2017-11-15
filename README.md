@@ -11,6 +11,11 @@ This is a simple GUI application which utilizes the power of Python to help NU s
 pip3 install -r requirements.txt
 ```
 
+* Then just run the app
+```
+python3 main.py
+```
+
 ## TODOs ##
 
 * Implement "linking" (binding R's together with L's for a specific teacher) 
