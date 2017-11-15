@@ -92,7 +92,7 @@ class UI(QWidget):
 
     def on_help_clicked(self):
         d = QDialog()
-        l1 = QLabel("1. Get a clearly formatted course list\nfor this I recommend PDF2XL,\nhave a look at a sample list in the /samples.\n2. Select the xlsx file with the Open button, wait for it\nto load, the app can be unresponsive.\n3. With Edit button select the needed courses,\nthey will appear on the Main window.\n4. Use Generate button to generate and\n save your schedule as result.txt")
+        l1 = QLabel("1. Get a clearly formatted course list\nfor this I recommend the program called PDF2XL,\nhave a look at the sample list in the /samples folder.\n2. Select the xlsx file with the Open button, wait for it\nto load, the app can be unresponsive.\n3. With Edit button select the needed courses,\nthey will appear on the Main window.\n4. Use Generate button to generate and\n save your schedule as result.txt")
         b1 = QPushButton("Ok", d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
