@@ -7,7 +7,9 @@ This is a simple GUI application which utilizes the power of Python to help NU s
 * Setup Python 3 environment and add it to the PATH.
 
 * Install the required modules:
-		pip3 install -r requirements.txt
+```
+pip3 install -r requirements.txt
+```
 
 ## TODOs ##
 
