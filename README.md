@@ -23,8 +23,8 @@ python3 main.py
 	// Probably filter out the final results with a specific list or a GUI solution
 	
 * Help and about windows fun
-* Improve database creation (mainly dealing with slow parser engine)
-	
+* Improve database creation (mainly dealing with slow parser engine) and fix its CPU usage
+		
 	// Multithreading???
 	
 	// True db???
