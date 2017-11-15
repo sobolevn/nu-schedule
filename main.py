@@ -10,6 +10,7 @@ from logging import basicConfig, DEBUG, info
 from re import compile as compiles
 from sys import exit, argv
 from time import strptime
+from datetime import datetime
 
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
@@ -158,6 +159,9 @@ class UI(QWidget):
         self.label.setText('Current list is ' + str(set(y[0].abbr for y in self.finallist)))
 
     def on_open_clicked(self):
+        
+        """ File openning procedure """
+        
         try:
             self.label.setText('Loading... Please wait, the app can be unresponsive')
             name = QFileDialog.getOpenFileName(self, 'Open File')
@@ -192,18 +196,22 @@ class UI(QWidget):
             self.label.setText('Unsupported file format')  
 
     def on_gen_clicked(self):
+        
+        """ Results output """
+        
         if self.finallist:
             outlist = [p for p in product(*self.finallist) if not any(one & two for one, two in combinations(p, 2))]
             self.label.setText('Generating schedule...')
             temp = 1
-            with open('result.txt', 'w') as file:
+            d = datetime.utcnow().strftime('%s')
+            with open('result' + d + '.txt', 'w') as file:
                 for k in outlist:
                     file.write('\n' + 'Schedule #' + str(temp) + '\n')
                     file.write('-------------------' + '\n')
                     for l in k:
                         file.write(str(l) + '\n')
                     temp = temp + 1
-            self.label.setText('Results successfully saved as result.txt')
+            self.label.setText('Results successfully saved as result' + d + '.txt')
             # TODO: workaround
             #sleep(1)
             #self.label.setText('Current list is ' + str([y[0].abbr for y in self.finallist]))
@@ -211,6 +219,7 @@ class UI(QWidget):
             self.label.setText('Cannot create a schedule with given courses')
 
     def checkxl(self, sheet):
+        
         """ A simple check to compare the input file's properties to the "standard's" """
         
         return sheet.cell(row=1, column=1).value == 'Course Abbr' and sheet.max_column == 13
