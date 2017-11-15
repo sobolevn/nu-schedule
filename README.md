@@ -6,7 +6,7 @@ This is a simple GUI application which utilizes the power of Python to help NU s
 
 * Setup Python 3 environment and add it to the PATH, pip package installed.
 
-* Install the required modules:
+* Install the required modules, in case of errors run with root/admin permissions:
 ```
 pip3 install -r requirements.txt
 ```
