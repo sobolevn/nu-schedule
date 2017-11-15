@@ -1,6 +1,6 @@
 # nu-schedule 0.1 alpha #
 
-This is a simple GUI application which utilizes the power of Python to help NU students with the time-consuming registration process.
+This is a simple GUI application, which utilizes the power of Python, to help NU students with the time-consuming registration process.
 
 ## How do I get set up? ##
 
