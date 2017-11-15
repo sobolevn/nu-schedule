@@ -19,7 +19,9 @@ python3 main.py
 ## TODOs ##
 
 * Implement "linking" (binding R's together with L's for a specific teacher) 
+
 	// Probably filter out the final results with a specific list or a GUI solution
+	
 * Help and about windows fun
 * Improve database creation (mainly dealing with slow parser engine)
 	
