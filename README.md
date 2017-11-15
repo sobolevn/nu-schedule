@@ -4,11 +4,11 @@ This is a simple GUI application, which utilizes the power of Python, to help NU
 
 ## How do I get set up? ##
 
-* Setup Python 3 environment and add it to the PATH, pip package installed.
+* Setup Python 3 environment and add it to the PATH, make sure that pip package is installed.
 
 * Install the required modules. In case of errors, run with root/admin permissions:
 ```
-pip3 install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 * Then just run the app
