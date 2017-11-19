@@ -20,6 +20,8 @@ python3 main.py
 
 * HIGH: Implement __linking__ by probably filtering out the final results with a specific list or a GUI solution (binding R's together with L's for a specific teacher)
 
+* MED: Write FAQ/usage to README
+
 * LOW: Create a __true__ database for more robust experience? Request a fresh pdf -> db/old xlsx approach
 	 
 * LOW: Make a compact executable (in short, force nuitka to work)
