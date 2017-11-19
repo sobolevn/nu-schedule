@@ -18,11 +18,7 @@ python3 main.py
 
 ## TODOs ##
 
-* HIGH: fix strange bug with CSCI 232 + CSCI 233 Spring 2018 collision
-
-* HIGH: Implement __linking__ (binding R's together with L's for a specific teacher) 
-
-	// Probably filter out the final results with a specific list or a GUI solution
+* HIGH: Implement __linking__ by probably filtering out the final results with a specific list or a GUI solution (binding R's together with L's for a specific teacher)
 
 * LOW: Create a __true__ database for more robust experience? Request a fresh pdf -> db/old xlsx approach
 	 
