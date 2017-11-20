@@ -1,21 +1,30 @@
 # nu-schedule 0.2 alpha #
 
-This is a simple GUI application, which utilizes the power of Python, to help NU students with the time-consuming registration process.
+This is a simple GUI application (with support of any system that can run Python 3 and PyQt), which utilizes the power of Python, to help NU students with the time-consuming registration process.
 
 <p align="center">
   <img src="https://github.com/ac130kz/nu-schedule/blob/master/res/mainscreen.png?raw=true" alt="GUI"/>
 </p>
 
+## Example report ##
+
+<a href="https://github.com/ac130kz/nu-schedule/blob/master/examples/result1511188563.txt?raw=true">
+<p align="center">
+  Right here!
+</p>
+</a>
+
 ## How do I get set up? ##
 
-* Setup Python 3 environment and add it to the PATH, make sure that pip package is installed.
+* Setup <a href="https://www.python.org/downloads/">Python 3</a> environment and add it to the PATH (a checkbox during the installation), sometimes you want to make sure that pip package is installed.
 
 * Install the required modules. In case of errors, run with root/admin permissions:
 ```
 python3 -m pip install -r requirements.txt
 ```
+* Download and unzip this repository or clone it.
 
-* Then just run the app
+* Then just run the app from the console:
 ```
 python3 main.py
 ```
