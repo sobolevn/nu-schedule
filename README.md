@@ -2,7 +2,9 @@
 
 This is a simple GUI application, which utilizes the power of Python, to help NU students with the time-consuming registration process.
 
-![Optional Text](../master/res/mainscreen.png)
+<p align="center">
+  <img src="https://github.com/ac130kz/nu-schedule/blob/master/res/mainscreen.png?raw=true" alt="GUI"/>
+</p>
 
 ## How do I get set up? ##
 
