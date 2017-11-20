@@ -2,6 +2,8 @@
 
 This is a simple GUI application, which utilizes the power of Python, to help NU students with the time-consuming registration process.
 
+![Optional Text](../master/res/mainscreen.png)
+
 ## How do I get set up? ##
 
 * Setup Python 3 environment and add it to the PATH, make sure that pip package is installed.
