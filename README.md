@@ -33,6 +33,8 @@ python3 main.py
 
 * HIGH: Implement __linking__ by probably filtering out the final results with a specific list or a GUI solution (binding R's together with L's for a specific teacher)
 
+* HIGH: Implement a fix for courses with complex schedule
+
 * MED: Write FAQ/usage to README
 
 * LOW: Create a __true__ database for more robust experience? Request a fresh pdf -> db/old xlsx approach
