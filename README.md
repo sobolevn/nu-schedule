@@ -40,3 +40,5 @@ python3 main.py
 * LOW: Create a __true__ database for more robust experience? Request a fresh pdf -> db/old xlsx approach
 	 
 * LOW: Make a compact executable (in short, force nuitka to work)
+
+* LOW: Get rid of manual creation of xslx (use PDFMiner) and always get the latest pdf (use requests)
