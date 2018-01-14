@@ -22,11 +22,11 @@ This is a simple GUI application (with support of any system that can run Python
 
 * Install the required modules. In case of errors, run with root/admin permissions:
 ```
-python3 -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 * Then just run the app from the console:
 ```
-python3 main.py
+python main.py
 ```
 
 ## TODOs ##
