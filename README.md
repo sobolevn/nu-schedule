@@ -16,14 +16,14 @@ This is a simple GUI application (with support of any system that can run Python
 
 ## How do I get set up? ##
 
-* Setup <a href="https://www.python.org/downloads/">Python 3</a> environment and add it to the PATH (a checkbox during the installation), sometimes you want to make sure that pip package is installed.
+* Setup <a href="https://www.python.org/downloads/">Python 3</a> environment and add it to the PATH (a checkbox during the installation on Windows), sometimes you want to make sure that pip package is installed.
+
+* Download and unzip this repository or clone it.
 
 * Install the required modules. In case of errors, run with root/admin permissions:
 ```
 python3 -m pip install -r requirements.txt
 ```
-* Download and unzip this repository or clone it.
-
 * Then just run the app from the console:
 ```
 python3 main.py
