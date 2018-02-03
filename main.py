@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# TODO: linking
-
 # built-in
 from collections import defaultdict
 from itertools import groupby, product, chain, combinations
@@ -34,8 +32,7 @@ reg = compiles('(?:\d+)([a-zA-Z]+)')
 table = {'M': 0, 'T': 1, 'W': 2, 'R': 3, 'F': 4, 'S': 5}
 
 ###############################################################################
-class Course():
-    
+class Course(): 
     """Models courses as a class"""
 
     def __init__(self, abbr, st, title, credit, days, timing, teacher, room):
@@ -67,7 +64,6 @@ class Course():
 
 ###############################################################################
 class UI(QWidget):
-    
     """Simple Qt UI"""
 
     coursesconnector = list()
@@ -92,7 +88,7 @@ class UI(QWidget):
 
         d = QDialog()
         l1 = QLabel(
-            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2017")
+            "nu-schedule\n\nA course schedule generator for\nthe Nazarbayev University\nHomepage: \nhttps://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2017")
         b1 = QPushButton('Ok', d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
@@ -133,6 +129,7 @@ class UI(QWidget):
             d = QDialog()
             add = QPushButton("Add", d)
             delete = QPushButton("Delete", d)
+            b1 = QPushButton("Ok", d)
             cmb1 = QComboBox()
             cmb1.addItems(sorted([t[0] for t in self.coursesconnector]))
             hbox = QHBoxLayout()
@@ -140,15 +137,18 @@ class UI(QWidget):
             hbox.addStretch()
             hbox.addWidget(add)
             hbox.addWidget(delete)
-            hbox.addStretch()
+            hbox.addWidget(b1)
             d.setWindowIcon(QIcon('res/logo.ico'))
             d.setWindowTitle("Adding courses")
             d.setLayout(hbox)
             add.clicked.connect(lambda: self.on_add_clicked(cmb1.currentText()))
             delete.clicked.connect(lambda: self.on_delete_clicked(cmb1.currentText()))
+            b1.clicked.connect(d.accept)
             d.exec_()
+            
     def get_finallistsize(self):
         """ Updating the info on the selection list """
+        
         if not self.finallist:
             data = "empty"
         else:
