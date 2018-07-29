@@ -31,11 +31,13 @@ basicConfig(
 # Regex expression to manage course sections
 reg = compiles('(?:\d+)([a-zA-Z]+)')
 # Enumeration of days
-table = {'M': 0, 'T': 1, 'W': 2, 'R': 3, 'F': 4, 'S': 5}
+table = {'M': 0, 'T': 1, 'W': 2, 'R': 3, 'F': 4, 'S': 5, '*': 6}
 
 ###############################################################################
+
+
 class Course():
-    
+
     """Models courses as a class"""
 
     def __init__(self, abbr, st, title, credit, days, timing, teacher, room):
@@ -48,8 +50,12 @@ class Course():
         self.teacher = str(teacher)
         self.room = str(room)
 
-        a, b = self.timing.split('-')
-        self.start, self.end = strptime(a, "%I:%M %p"), strptime(b, "%I:%M %p")
+        if self.timing != '*':
+            a, b = self.timing.split('-')
+            self.start, self.end = strptime(
+                a, "%I:%M %p"), strptime(b, "%I:%M %p")
+        else:
+            self.start, self.end = str(), str()
         self.dayslist = [table.get(i) for i in table if i in self.days]
 
     def __repr__(self):
@@ -60,14 +66,19 @@ class Course():
     def __and__(self, other):
         """ Intersection check """
 
+        if 6 in set(self.dayslist) or 6 in set(other.dayslist):
+            return False
+
         if not set.intersection(set(self.dayslist), set(other.dayslist)):
             return False
         else:
             return self.start <= other.end and self.end >= other.start
 
 ###############################################################################
+
+
 class UI(QWidget):
-    
+
     """Simple Qt UI"""
 
     coursesconnector = list()
@@ -92,7 +103,7 @@ class UI(QWidget):
 
         d = QDialog()
         l1 = QLabel(
-            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2017")
+            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2018")
         b1 = QPushButton('Ok', d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
@@ -144,16 +155,20 @@ class UI(QWidget):
             d.setWindowIcon(QIcon('res/logo.ico'))
             d.setWindowTitle("Adding courses")
             d.setLayout(hbox)
-            add.clicked.connect(lambda: self.on_add_clicked(cmb1.currentText()))
-            delete.clicked.connect(lambda: self.on_delete_clicked(cmb1.currentText()))
+            add.clicked.connect(
+                lambda: self.on_add_clicked(cmb1.currentText()))
+            delete.clicked.connect(
+                lambda: self.on_delete_clicked(cmb1.currentText()))
             d.exec_()
+
     def get_finallistsize(self):
         """ Updating the info on the selection list """
+
         if not self.finallist:
             data = "empty"
         else:
             data = str(set(y[0].abbr for y in self.finallist))
-        self.label.setText("Your selection is: \n" + data)         
+        self.label.setText("Your selection is: \n" + data)
 
     def fail_dialog(self):
         """ Is triggered if schedules cannot be created """
@@ -242,7 +257,8 @@ class UI(QWidget):
 
                 for i in range(1, sheet.nrows):
                     courses.append(Course(
-                        sheet.cell_value(i, 0), sheet.cell_value(i, 1), sheet.cell_value(i, 2), sheet.cell_value(i, 4), 
+                        sheet.cell_value(i, 0), sheet.cell_value(
+                            i, 1), sheet.cell_value(i, 2), sheet.cell_value(i, 4),
                         sheet.cell_value(i, 7), sheet.cell_value(i, 8), sheet.cell_value(i, 11), sheet.cell_value(i, 12)))
 
                 self.label.setText('File successfully loaded')
@@ -262,18 +278,20 @@ class UI(QWidget):
         if self.finallist:
             self.label.setText('Generating schedule...')
             info('Generating schedule for ' + str(self.finallist))
-            outlist = [p for p in product(*self.finallist) if not any(one & two for one, two in combinations(p, 2)) ]
+            outlist = [p for p in product(
+                *self.finallist) if not any(one & two for one, two in combinations(p, 2))]
             temp = 1
-            d = datetime.utcnow().strftime('%s')
+            d = str(datetime.utcnow().timestamp())
 
             if outlist:
                 with open('result' + d + '.txt', 'w') as file:
                     for k in outlist:
                         file.write('Schedule #' + str(temp) + '\n')
-                        headers = ['Abbreviation', 'Section', 'Title', 'ECTS Credits', 'Days', 'Time', 'Teacher', 'Room']
-                        
-                        file.write(tabulate([[elem.__dict__['abbr'], elem.__dict__['st'], elem.__dict__['title'], elem.__dict__['credit'], elem.__dict__['days'], 
-                              elem.__dict__['timing'], elem.__dict__['teacher'], elem.__dict__['room']] for elem in list(k)], headers, tablefmt="grid"))
+                        headers = ['Abbreviation', 'Section', 'Title',
+                                   'ECTS Credits', 'Days', 'Time', 'Teacher', 'Room']
+
+                        file.write(tabulate([[elem.__dict__['abbr'], elem.__dict__['st'], elem.__dict__['title'], elem.__dict__['credit'], elem.__dict__['days'],
+                                              elem.__dict__['timing'], elem.__dict__['teacher'], elem.__dict__['room']] for elem in list(k)], headers, tablefmt="grid"))
                         file.write('\n\n')
                         temp = temp + 1
                 self.success_dialog(d)
@@ -284,7 +302,8 @@ class UI(QWidget):
                 info('Cannot create a schedule with these courses')
         else:
             self.empty_dialog()
-            info('List to generate schedule is assumed to be zero and it is currently ' + str(self.finallist))
+            info('List to generate schedule is assumed to be zero and it is currently ' +
+                 str(self.finallist))
 
     def checkxl(self, sheet):
         """ A simple check to compare the input file's properties to the "standard's" """
@@ -299,7 +318,8 @@ class UI(QWidget):
         for obj in inlist:
             result[obj.abbr][reg.search(obj.st).group(1)].append(obj)
 
-        inlist = [(list(r.values())[0][0].abbr, list(r.values())) for r in result.values()]
+        inlist = [(list(r.values())[0][0].abbr, list(r.values()))
+                  for r in result.values()]
         info('Courses were sorted')
 
         return inlist
@@ -352,6 +372,7 @@ class UI(QWidget):
         self.setWindowIcon(QIcon('res/logo.ico'))
         self.show()
         info('Main window loaded')
+
 
 def main():
     info('Starting the app')
