@@ -1,6 +1,6 @@
-# nu-schedule 0.22 #
+# nu-schedule 0.23 #
 
-This is a simple GUI application (with support of any system that can run Python 3 and PyQt), which utilizes the power of Python, to help NU students with the time-consuming registration process. [Example report](https://github.com/ac130kz/nu-schedule/blob/master/examples/result1532841466.735346.txt?raw=true).
+This is a simple GUI application (with support of any system that can run Python 3 and PySide2), which utilizes the power of Python, to help NU students with the time-consuming registration process. [Example report](https://github.com/ac130kz/nu-schedule/blob/master/examples/result1532841466.735346.txt?raw=true).
 
 <p align="center">
   <img src="https://github.com/ac130kz/nu-schedule/blob/master/res/mainscreen.png?raw=true" alt="GUI"/>
