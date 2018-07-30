@@ -15,11 +15,11 @@ from datetime import datetime
 # imports
 from tabulate import tabulate
 import xlrd
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                              QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
                              QLabel, QPushButton, QVBoxLayout, QWidget, QDialog, QFrame)
-from PyQt5.QtCore import Qt
+from PySide2.QtCore import Qt
 
 # Simple logging suite
 basicConfig(
