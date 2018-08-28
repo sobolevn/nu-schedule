@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# TODO: linking
-
 # built-in
 from collections import defaultdict
 from itertools import groupby, product, chain, combinations
