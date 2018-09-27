@@ -89,7 +89,7 @@ class UI(QWidget):
         self.initui()
 
     def center(self):
-        """ Centering magick """
+        """ Centering magic """
 
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
