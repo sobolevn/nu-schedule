@@ -1,4 +1,4 @@
-# nu-schedule 0.3 #
+# nu-schedule 0.4 #
 
 This is a simple GUI application (with support of any system that can run Python 3 and PySide2), which utilizes the power of Python, to help NU students with the time-consuming registration process. [Example report](https://github.com/ac130kz/nu-schedule/blob/master/examples/result1532841466.735346.txt?raw=true).
 

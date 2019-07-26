@@ -8,11 +8,14 @@ from re import compile as compiles
 from sys import exit, argv
 from time import strptime
 from datetime import datetime
+from enum import Enum, auto
 import logging
 import requests
 import json
+import asyncio
 
 # imports
+import aiohttp
 from tabulate import tabulate
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
@@ -40,53 +43,73 @@ headers = {"Host": "registrar.nu.edu.kz",
            "Content-Type": "application/x-www-form-urlencoded",
            "X-Requested-With": "XMLHttpRequest",
            "Connection": "keep-alive"}
-courses_payload = {"method": "getSearchData",
-                   "searchParams[formSimple]": "false",
-                   "searchParams[limit]": "100",
-                   "searchParams[page]": "1",
-                   "searchParams[start]": "0",
-                   "searchParams[quickSearch]": "",
-                   "searchParams[sortField]": "-1",
-                   "searchParams[sortDescending]": "-1",
-                   # Fall 2019
-                   "searchParams[semester]": "421",
-                   # SHSS and SST now don't exist, we use SSH and SEDS
-                   "searchParams[schools][]": ["13", "12"],
-                   "searchParams[departments]": "",
-                   "searchParams[levels][]": "1",
-                   "searchParams[subjects]": "",
-                   "searchParams[instructors]": "",
-                   "searchParams[breadths]": "",
-                   "searchParams[abbrNum]": "",
-                   "searchParams[credit]": ""
-                   }
-schedule_payload = {"method": "getSchedule",
-                    "courseId": "4561",
-                    "termId": "421"}
 
 
-def fetcher():
-    # courses require pagination
-    courses_page_counter = 2
+class Request(Enum):
+    COURSE = auto()
+    SCHEDULE = auto()
 
-    # keep-alive, async requests, blocks on an access
-    s = requests.Session()
 
-    # fetching courses page by page
-    courses = s.post(api, data=courses_payload, headers=headers)
-    courses_json = json.loads(courses.text)
-    while int(courses_json["total"]) >= 100 * courses_page_counter:
-        courses_payload["searchParams[page]"] = str(courses_page_counter)
-        next_page = s.post(api, data=courses_payload, headers=headers)
-        courses_json["data"] += json.loads(next_page.text)["data"]
-        courses_page_counter += 1
+async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, courseid=""):
+    if request_type == Request.COURSE:
+        data = {"method": "getSearchData",
+                "searchParams[formSimple]": "false",
+                "searchParams[limit]": "100",
+                "searchParams[page]": str(page),
+                "searchParams[start]": "0",
+                "searchParams[quickSearch]": "",
+                "searchParams[sortField]": "-1",
+                "searchParams[sortDescending]": "-1",
+                # Fall 2019
+                "searchParams[semester]": "421",
+                # SHSS and SST now don't exist, we use SSH and SEDS
+                "searchParams[schools][]": ["13", "12"],
+                "searchParams[departments]": "",
+                "searchParams[levels][]": "1",
+                "searchParams[subjects]": "",
+                "searchParams[instructors]": "",
+                "searchParams[breadths]": "",
+                "searchParams[abbrNum]": "",
+                "searchParams[credit]": ""
+                }
+        async with session.post(api, headers=headers, data=data) as response:
+            return json.loads(await response.read())
+    else:
+        data = {"method": "getSchedule",
+                "courseId": courseid,
+                "termId": "421"}
+        async with session.post(api, headers=headers, data=data) as response:
+            return courseid, json.loads(await response.read())
 
-    # fetching schedules for each course
-    for i in courses_json["data"]:
-        schedule_payload["courseId"] = str(i["COURSEID"])
-        schedule = s.post(api, params=schedule_payload, headers=headers)
-        i["SCHEDULE"] = json.loads(schedule.text)
-    return courses_json
+
+async def fetch_worker():
+    async with aiohttp.ClientSession() as session:
+        # the first courses page
+        tasks = []
+        courses = await fetch(session, Request.COURSE)
+
+        # working on the courses
+        max_range = 3 + int(courses["total"]) // 100
+        for i in range(2, max_range):
+            tasks.append(fetch(session, Request.COURSE, i))
+        other_course_pages = await asyncio.gather(*tasks)
+        for i in other_course_pages:
+            courses["data"] += i["data"]
+
+        # working on the schedules
+        tasks = []
+        for i in courses["data"]:
+            tasks.append(
+                fetch(session, Request.SCHEDULE, courseid=i["COURSEID"]))
+
+        schedules = await asyncio.gather(*tasks)
+        for courseid, i in schedules:
+            for j in courses["data"]:
+                if j["COURSEID"] == courseid:
+                    j["SCHEDULE"] = i
+                    break
+
+        return courses
 
     ###############################################################################
 
@@ -299,7 +322,8 @@ class UI(QWidget):
         QApplication.processEvents()
 
         try:
-            data = fetcher()
+            loop = asyncio.get_event_loop()
+            data = loop.run_until_complete(fetch_worker())
             if data:
                 courses = list()
                 for i in data["data"]:
