@@ -4,34 +4,92 @@
 # built-in
 from collections import defaultdict
 from itertools import groupby, product, chain, combinations
-from logging import basicConfig, DEBUG, info
 from re import compile as compiles
 from sys import exit, argv
-from time import strptime
+from time import strptime, sleep
 from datetime import datetime
+import logging
+import requests
+import json
 
 # imports
 from tabulate import tabulate
 import xlrd
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
-                             QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
-                             QLabel, QPushButton, QVBoxLayout, QWidget, QDialog, QFrame)
+                               QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
+                               QLabel, QPushButton, QVBoxLayout, QWidget, QDialog, QFrame)
 from PySide2.QtCore import Qt
 
 # Simple logging suite
-basicConfig(
-    filename='main.log',
-    level=DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%d/%m/%Y %I:%M:%S %p')
+logging.basicConfig(
+    filename="main.log",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%d/%m/%Y %I:%M:%S %p")
+log = logging.getLogger(__name__)
 
 # Regex expression to manage course sections
-reg = compiles('(?:\d+)([a-zA-Z]+)')
+reg = compiles(r"(?:\d+)([a-zA-Z]+)")
 # Enumeration of days
-table = {'M': 0, 'T': 1, 'W': 2, 'R': 3, 'F': 4, 'S': 5, '*': 6}
-
+table = {"M": 0, "T": 1, "W": 2, "R": 3, "F": 4, "S": 5, "*": 6}
 ###############################################################################
+api = "https://registrar.nu.edu.kz/my-registrar/public-course-catalog/json"
+headers = {"Host": "registrar.nu.edu.kz",
+           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0",
+           "Referer": "https://registrar.nu.edu.kz/course-catalog",
+           "Content-Type": "application/x-www-form-urlencoded",
+           "X-Requested-With": "XMLHttpRequest",
+           "Connection": "keep-alive"}
+courses_payload = {"method": "getSearchData",
+                   "searchParams[formSimple]": "false",
+                   "searchParams[limit]": "100",
+                   "searchParams[page]": "1",
+                   "searchParams[start]": "0",
+                   "searchParams[quickSearch]": "",
+                   "searchParams[sortField]": "-1",
+                   "searchParams[sortDescending]": "-1",
+                   # Fall 2019
+                   "searchParams[semester]": "421",
+                   # SHSS and SST now don't exist, we use SSH and SEDS
+                   "searchParams[schools][]": ["13", "12"],
+                   "searchParams[departments]": "",
+                   "searchParams[levels][]": "1",
+                   "searchParams[subjects]": "",
+                   "searchParams[instructors]": "",
+                   "searchParams[breadths]": "",
+                   "searchParams[abbrNum]": "",
+                   "searchParams[credit]": ""
+                   }
+schedule_payload = {"method": "getSchedule",
+                    "courseId": "4561",
+                    "termId": "421"}
+
+
+def fetcher():
+    # courses require pagination
+    courses_page_counter = 2
+
+    # keep-alive, async requests, blocks on an access
+    s = requests.Session()
+
+    # fetching courses page by page
+    courses = s.post(api, data=courses_payload, headers=headers)
+    courses_json = json.loads(courses.text)
+    while int(courses_json["total"]) >= 100 * courses_page_counter:
+        courses_payload["searchParams[page]"] = str(courses_page_counter)
+        next_page = s.post(api, data=courses_payload, headers=headers)
+        courses_json["data"] += json.loads(next_page.text)["data"]
+        courses_page_counter += 1
+
+    # fetching schedules for each course
+    for i in courses_json["data"]:
+        schedule_payload["courseId"] = str(i["COURSEID"])
+        schedule = s.post(api, params=schedule_payload, headers=headers)
+        i["SCHEDULE"] = json.loads(schedule.text)
+    return courses_json
+
+    ###############################################################################
 
 
 class Course():
@@ -48,8 +106,8 @@ class Course():
         self.teacher = str(teacher)
         self.room = str(room)
 
-        if self.timing != '*':
-            a, b = self.timing.split('-')
+        if self.timing != "*":
+            a, b = self.timing.split("-")
             self.start, self.end = strptime(
                 a, "%I:%M %p"), strptime(b, "%I:%M %p")
         else:
@@ -57,9 +115,7 @@ class Course():
         self.dayslist = [table.get(i) for i in table if i in self.days]
 
     def __repr__(self):
-        return str(self.abbr + ' | ' + self.st + ' | ' + self.title +
-                   ' | ' + self.credit + ' | ' + self.days + ' | ' + self.timing + ' | ' +
-                   self.teacher + ' | ' + self.room)
+        return f"{self.abbr} | {self.st} | {self.title} | {self.credit} | {self.days} | {self.timing} | {self.teacher} | {self.room}"
 
     def __and__(self, other):
         """ Intersection check """
@@ -101,8 +157,8 @@ class UI(QWidget):
 
         d = QDialog()
         l1 = QLabel(
-            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2018")
-        b1 = QPushButton('Ok', d)
+            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2019")
+        b1 = QPushButton("Ok", d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
         hbox = QHBoxLayout()
@@ -110,7 +166,7 @@ class UI(QWidget):
         hbox.addWidget(b1)
         hbox.addStretch()
         vbox.addItem(hbox)
-        d.setWindowIcon(QIcon('res/logo.ico'))
+        d.setWindowIcon(QIcon("res/logo.ico"))
         d.setWindowTitle("About")
         d.setLayout(vbox)
         b1.clicked.connect(d.accept)
@@ -120,7 +176,7 @@ class UI(QWidget):
         """ Help pop-up """
 
         d = QDialog()
-        l1 = QLabel("1. Get a clearly formatted xlsx/xls with courses\nfor this I recommend a program called PDF2XL,\nhave a look at the sample lists in the /samples/ folder.\n\n2. Select your prepared xlsx/xls file with the |Open| button,\nto load the courses into the app\n\n3. With |Edit| button access the selection menu,\nadded courses will appear on the Main window.\n\n4. Use |Generate| button to generate and\n save your schedule as result<unixtimestamp>.txt")
+        l1 = QLabel("1. Press |Load| to download the latest data for the semester.\n\n3. With |Edit| button access the selection menu,\nadded courses will appear on the Main window.\n\n4. Use |Generate| button to generate and\n save your schedule as result<unixtimestamp>.txt")
         b1 = QPushButton("Ok", d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
@@ -129,7 +185,7 @@ class UI(QWidget):
         hbox.addWidget(b1)
         hbox.addStretch()
         vbox.addItem(hbox)
-        d.setWindowIcon(QIcon('res/logo.ico'))
+        d.setWindowIcon(QIcon("res/logo.ico"))
         d.setWindowTitle("Help")
         d.setLayout(vbox)
         b1.clicked.connect(d.accept)
@@ -150,7 +206,7 @@ class UI(QWidget):
             hbox.addWidget(add)
             hbox.addWidget(delete)
             hbox.addStretch()
-            d.setWindowIcon(QIcon('res/logo.ico'))
+            d.setWindowIcon(QIcon("res/logo.ico"))
             d.setWindowTitle("Adding courses")
             d.setLayout(hbox)
             add.clicked.connect(
@@ -166,7 +222,7 @@ class UI(QWidget):
             data = "empty"
         else:
             data = str(set(y[0].abbr for y in self.finallist))
-        self.label.setText("Your selection is: \n" + data)
+        self.label.setText(f"Your selection is: \n{data}")
 
     def fail_dialog(self):
         """ Is triggered if schedules cannot be created """
@@ -182,7 +238,7 @@ class UI(QWidget):
         d.setWindowTitle("Failed")
         d.setLayout(vbox)
         b1.clicked.connect(d.accept)
-        d.setWindowIcon(QIcon('res/logo.ico'))
+        d.setWindowIcon(QIcon("res/logo.ico"))
         self.get_finallistsize()
         d.exec_()
 
@@ -191,7 +247,7 @@ class UI(QWidget):
 
         d = QDialog()
         b1 = QPushButton("Ok", d)
-        lbl1 = QLabel('Results successfully saved as result' + desc + '.txt')
+        lbl1 = QLabel("Results successfully saved as result" + desc + ".txt")
         vbox = QVBoxLayout()
         vbox.addWidget(lbl1)
         vbox.addStretch()
@@ -200,7 +256,7 @@ class UI(QWidget):
         d.setWindowTitle("Success")
         d.setLayout(vbox)
         b1.clicked.connect(d.accept)
-        d.setWindowIcon(QIcon('res/logo.ico'))
+        d.setWindowIcon(QIcon("res/logo.ico"))
         self.get_finallistsize()
         d.exec_()
 
@@ -209,7 +265,7 @@ class UI(QWidget):
 
         d = QDialog()
         b1 = QPushButton("Ok", d)
-        lbl1 = QLabel('Your selection of courses is empty')
+        lbl1 = QLabel("Your selection of courses is empty")
         vbox = QVBoxLayout()
         vbox.addWidget(lbl1)
         vbox.addStretch()
@@ -218,7 +274,7 @@ class UI(QWidget):
         d.setWindowTitle("Selection empty")
         d.setLayout(vbox)
         b1.clicked.connect(d.accept)
-        d.setWindowIcon(QIcon('res/logo.ico'))
+        d.setWindowIcon(QIcon("res/logo.ico"))
         d.exec_()
 
     def on_add_clicked(self, text):
@@ -229,7 +285,6 @@ class UI(QWidget):
                 if k == text:
                     for i in v:
                         self.finallist.append(i)
-
             self.get_finallistsize()
 
     def on_delete_clicked(self, text):
@@ -238,75 +293,62 @@ class UI(QWidget):
         self.finallist = [x for x in self.finallist if text != x[0].abbr]
         self.get_finallistsize()
 
-    def on_open_clicked(self):
-        """ File openning procedure """
+    def on_load_clicked(self):
+        """ Data loading procedure """
+        self.label.setText(
+            "Loading... Application can be unresponsive for 20 seconds")
+        sleep(1)
 
         try:
-            self.label.setText('Loading... Please wait')
-            name = QFileDialog.getOpenFileName(self, 'Open File')
-
-            book = xlrd.open_workbook(str(name[0]))
-            sheet = book.sheet_by_index(0)
-
-            if self.checkxl(sheet):
-                info('Input file ' + str(name[0]) + ' was successfully read.')
-
+            data = fetcher()
+            if data:
                 courses = list()
+                for i in data["data"]:
+                    for j in i["SCHEDULE"]:
+                        courses.append(Course(
+                            i["ABBR"], j["ST"], i["TITLE"], i["CRECTS"],
+                            j["DAYS"], j["TIMES"], j["FACULTY"], j["ROOM"]))
 
-                for i in range(1, sheet.nrows):
-                    courses.append(Course(
-                        sheet.cell_value(i, 0), sheet.cell_value(
-                            i, 1), sheet.cell_value(i, 2), sheet.cell_value(i, 4),
-                        sheet.cell_value(i, 7), sheet.cell_value(i, 8), sheet.cell_value(i, 11), sheet.cell_value(i, 12)))
-
-                self.label.setText('File successfully loaded')
+                self.label.setText("Successfully loaded")
                 courses = self.groupabbr(courses)
                 self.coursesconnector = courses
-
-        except FileNotFoundError:
-            self.label.setText('Problems with the input file')
-            info('Problems with the input file')
+            else:
+                self.label.setText("Empty data")
         except Exception as e:
-            print(str(e))
-            info('Caught the following exception ' + str(e))
+            log.exception(e)
 
     def on_gen_clicked(self):
         """ Results output """
 
         if self.finallist:
-            self.label.setText('Generating schedule...')
-            info('Generating schedule for ' + str(self.finallist))
+            self.label.setText("Generating schedule...")
+            log.info(f"Generating schedule for {self.finallist}")
             outlist = [p for p in product(
                 *self.finallist) if not any(one & two for one, two in combinations(p, 2))]
             temp = 1
             d = str(datetime.utcnow().timestamp())
 
             if outlist:
-                with open('result' + d + '.txt', 'w') as file:
+                with open("result" + d + ".txt", "w") as file:
                     for k in outlist:
-                        file.write('Schedule #' + str(temp) + '\n')
-                        headers = ['Abbreviation', 'Section', 'Title',
-                                   'ECTS Credits', 'Days', 'Time', 'Teacher', 'Room']
+                        file.write(f"Schedule #{temp}\n")
+                        headers = ["Abbreviation", "Section", "Title",
+                                   "ECTS Credits", "Days", "Time", "Teacher", "Room"]
 
-                        file.write(tabulate([[elem.__dict__['abbr'], elem.__dict__['st'], elem.__dict__['title'], elem.__dict__['credit'], elem.__dict__['days'],
-                                              elem.__dict__['timing'], elem.__dict__['teacher'], elem.__dict__['room']] for elem in list(k)], headers, tablefmt="grid"))
-                        file.write('\n\n')
+                        file.write(tabulate([[elem.__dict__["abbr"], elem.__dict__["st"], elem.__dict__["title"], elem.__dict__["credit"], elem.__dict__["days"],
+                                              elem.__dict__["timing"], elem.__dict__["teacher"], elem.__dict__["room"]] for elem in list(k)], headers, tablefmt="grid"))
+                        file.write("\n\n")
                         temp = temp + 1
                 self.success_dialog(d)
-                info('Results are ' + str(outlist))
-                info('Results successfully saved as result' + d + '.txt')
+                log.info(f"Results are {outlist}")
+                log.info(f"Results successfully saved as result{d}.txt")
             else:
                 self.fail_dialog()
-                info('Cannot create a schedule with these courses')
+                log.info("Cannot create a schedule with these courses")
         else:
             self.empty_dialog()
-            info('List to generate schedule is assumed to be zero and it is currently ' +
-                 str(self.finallist))
-
-    def checkxl(self, sheet):
-        """ A simple check to compare the input file's properties to the "standard's" """
-
-        return str(sheet.cell_value(0, 0)) == 'Course Abbr' and sheet.ncols == 13
+            log.info(
+                f"List to generate schedule is assumed to be zero and it is currently {self.finallist}")
 
     def groupabbr(self, inlist):
         """ Forms a list of course lists based on the course abbreviation and section (s/t) """
@@ -318,8 +360,7 @@ class UI(QWidget):
 
         inlist = [(list(r.values())[0][0].abbr, list(r.values()))
                   for r in result.values()]
-        info('Courses were sorted')
-
+        log.info("Courses were sorted")
         return inlist
 
     def initui(self):
@@ -330,23 +371,22 @@ class UI(QWidget):
         self.label = QLabel(self)
         self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         if not self.finallist:
-            self.label.setText('File is not loaded')
+            self.label.setText("Data was not loaded")
 
         # Defining buttons
         # -------------------------------------
-        info('Defining buttons')
-        open_button = QPushButton("Open xlsx/xls and load it")
+        load_button = QPushButton("Load")
         edit_button = QPushButton("Edit needed courses")
         help_button = QPushButton("Help")
         about_button = QPushButton("About")
         gen_button = QPushButton("Generate!")
         gen_button.setStyleSheet(
-            'QPushButton {background-color: #c7f439; color: red; font-size: 50px;}')
+            "QPushButton {background-color: #c7f439; color: red; font-size: 50px;}")
 
         # Dealing with the interface of the app
         # -------------------------------------
         grid = QGridLayout()
-        grid.addWidget(open_button)
+        grid.addWidget(load_button)
         grid.addWidget(edit_button)
         grid.addWidget(help_button)
         grid.addWidget(about_button)
@@ -359,25 +399,21 @@ class UI(QWidget):
         help_button.clicked.connect(self.on_help_clicked)
         edit_button.clicked.connect(self.on_edit_clicked)
         about_button.clicked.connect(self.on_about_clicked)
-        open_button.clicked.connect(self.on_open_clicked)
+        load_button.clicked.connect(self.on_load_clicked)
         gen_button.clicked.connect(self.on_gen_clicked)
 
         # Setting window properties
         # ------------------------------------
         self.setGeometry(600, 300, 500, 270)
         self.center()
-        self.setWindowTitle('nu-schedule')
-        self.setWindowIcon(QIcon('res/logo.ico'))
+        self.setWindowTitle("nu-schedule")
+        self.setWindowIcon(QIcon("res/logo.ico"))
         self.show()
-        info('Main window loaded')
+        log.info("Main window loaded")
 
 
-def main():
-    info('Starting the app')
+if __name__ == "__main__":
+    log.info("Starting the app")
     app = QApplication(argv)
     widget = UI()
-    return app.exec_()
-
-
-if __name__ == '__main__':
-    exit(main())
+    exit(app.exec_())

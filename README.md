@@ -1,4 +1,4 @@
-# nu-schedule 0.23 #
+# nu-schedule 0.3 #
 
 This is a simple GUI application (with support of any system that can run Python 3 and PySide2), which utilizes the power of Python, to help NU students with the time-consuming registration process. [Example report](https://github.com/ac130kz/nu-schedule/blob/master/examples/result1532841466.735346.txt?raw=true).
 
@@ -8,25 +8,24 @@ This is a simple GUI application (with support of any system that can run Python
 
 ## How to run? ##
 
-* Setup <a href="https://www.python.org/downloads/">Python 3</a> environment and add it to the PATH (a checkbox during the installation on Windows), sometimes you want to make sure that pip package is installed.
+* Setup <a href="https://www.python.org/downloads/">Python 3</a> environment and add it to the PATH (a checkbox during the installation on Windows), sometimes you want to make sure that `pip` package is installed.
 
 * Download and unzip this repository or clone it.
 
 * Install the required modules. In case of errors, run with root/admin permissions:
 ```bash
-python3 -m pip install -r requirements.txt
+python -m pip install --upgrade -r requirements.txt
 ```
 * Then just run the app from the console:
 ```bash
-python3 main.py
+python main.py
 ```
 
-## FAQ ##
+## How to use? ##
 
-1. Get a clearly formatted xlsx/xls with courses for this I recommend a program called [PDF2XL](https://www.cogniview.com/download), have a look at the sample lists in /samples. To make your own list, open the pdf in PDF2XL, select tables one by one, split and merge vertically where appropriate (again check the samples), right click the selection - select __Table Structure__ - then __Create rows between column text__. This will automatically do the difficult part. Finally, convert this table and add its contents to your new list.
-2. Select your prepared xlsx/xls file with the |Open| button, to load the courses into the app
-3. With |Edit| button access the selection menu, added courses will appear on the Main window.
-4. Use |Generate| button to generate and save your schedule as result<unixtimestamp>.txt
+1. Press |Load| to get the latest version of the Undergradute data for the current semester.
+2. With |Edit| button access the selection menu, added courses will appear on the Main window.
+3. Use |Generate| button to generate and save your schedule as result<unixtimestamp>.txt
 
 ## TODOs/Known issues ##
 
@@ -35,5 +34,3 @@ python3 main.py
 - [ ] Implement a fix for courses with complex schedule (separate entries)
 	 
 - [ ] Make a compact executable (in short, force nuitka to work)
-
-- [ ] Get rid of manual creation of xslx (use PDFMiner) and always get the latest pdf (use requests)/Create a __true__ database for more robust experience? Request a fresh pdf -> db/old xlsx approach
