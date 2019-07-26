@@ -6,7 +6,7 @@ from collections import defaultdict
 from itertools import groupby, product, chain, combinations
 from re import compile as compiles
 from sys import exit, argv
-from time import strptime, sleep
+from time import strptime
 from datetime import datetime
 import logging
 import requests
@@ -14,7 +14,6 @@ import json
 
 # imports
 from tabulate import tabulate
-import xlrd
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                                QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
@@ -297,7 +296,7 @@ class UI(QWidget):
         """ Data loading procedure """
         self.label.setText(
             "Loading... Application can be unresponsive for 20 seconds")
-        sleep(1)
+        QApplication.processEvents()
 
         try:
             data = fetcher()
