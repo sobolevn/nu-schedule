@@ -10,7 +10,6 @@ from time import strptime
 from datetime import datetime
 from enum import Enum, auto
 import logging
-import requests
 import json
 import asyncio
 
