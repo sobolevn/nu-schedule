@@ -27,7 +27,7 @@ logging.basicConfig(
     filename="main.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%d/%m/%Y %I:%M:%S %p")
+    datefmt="%d/%m/%Y %H:%M:%S")
 log = logging.getLogger(__name__)
 
 # Regex expression to manage course sections
@@ -64,6 +64,7 @@ async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, c
                 # SHSS and SST now don't exist, we use SSH and SEDS
                 "searchParams[schools][]": ["13", "12"],
                 "searchParams[departments]": "",
+                # undergraduate
                 "searchParams[levels][]": "1",
                 "searchParams[subjects]": "",
                 "searchParams[instructors]": "",
@@ -72,13 +73,13 @@ async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, c
                 "searchParams[credit]": ""
                 }
         async with session.post(api, headers=headers, data=data) as response:
-            return json.loads(await response.read())
+            return await response.json(content_type="text/html")
     else:
         data = {"method": "getSchedule",
                 "courseId": courseid,
                 "termId": "421"}
         async with session.post(api, headers=headers, data=data) as response:
-            return courseid, json.loads(await response.read())
+            return courseid, await response.json(content_type="text/html")
 
 
 async def fetch_worker():
