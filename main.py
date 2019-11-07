@@ -37,7 +37,7 @@ table = {"M": 0, "T": 1, "W": 2, "R": 3, "F": 4, "S": 5, "*": 6}
 ###############################################################################
 api = "https://registrar.nu.edu.kz/my-registrar/public-course-catalog/json"
 headers = {"Host": "registrar.nu.edu.kz",
-           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0",
+           "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0",
            "Referer": "https://registrar.nu.edu.kz/course-catalog",
            "Content-Type": "application/x-www-form-urlencoded",
            "X-Requested-With": "XMLHttpRequest",
@@ -59,8 +59,8 @@ async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, c
                 "searchParams[quickSearch]": "",
                 "searchParams[sortField]": "-1",
                 "searchParams[sortDescending]": "-1",
-                # Fall 2019
-                "searchParams[semester]": "421",
+                # Spring 2020
+                "searchParams[semester]": "442",
                 # SHSS and SST now don't exist, we use SSH and SEDS
                 "searchParams[schools][]": ["13", "12"],
                 "searchParams[departments]": "",
@@ -77,7 +77,8 @@ async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, c
     else:
         data = {"method": "getSchedule",
                 "courseId": courseid,
-                "termId": "421"}
+                # Spring 2020
+                "termId": "442"}
         async with session.post(api, headers=headers, data=data) as response:
             return courseid, await response.json(content_type="text/html")
 
