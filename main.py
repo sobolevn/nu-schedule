@@ -346,6 +346,8 @@ class UI(QWidget):
 
         if self.finallist:
             self.label.setText("Generating schedule...")
+            QApplication.processEvents()
+
             log.info(f"Generating schedule for {self.finallist}")
             outlist = [p for p in product(
                 *self.finallist) if not any(one & two for one, two in combinations(p, 2))]
