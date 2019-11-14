@@ -17,7 +17,7 @@ import asyncio
 import aiohttp
 from tabulate import tabulate
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
+from PySide2.QtWidgets import (QApplication, QComboBox, QDesktopWidget, QProgressBar,
                                QDialogButtonBox, QFileDialog, QHBoxLayout, QGridLayout,
                                QLabel, QPushButton, QVBoxLayout, QWidget, QDialog, QFrame)
 from PySide2.QtCore import Qt
@@ -73,14 +73,14 @@ async def fetch(session: aiohttp.ClientSession, request_type: Request, page=1, c
                 "searchParams[credit]": ""
                 }
         async with session.post(api, headers=headers, data=data) as response:
-            return await response.json(content_type="text/html")
+            return json.loads(await response.text())
     else:
         data = {"method": "getSchedule",
                 "courseId": courseid,
                 # Spring 2020
                 "termId": "442"}
         async with session.post(api, headers=headers, data=data) as response:
-            return courseid, await response.json(content_type="text/html")
+            return courseid, json.loads(await response.text())
 
 
 async def fetch_worker():
@@ -180,7 +180,7 @@ class UI(QWidget):
 
         d = QDialog()
         l1 = QLabel(
-            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2019")
+            "nu-schedule\n\nA course schedule generator for the Nazarbayev University\nHomepage: https://github.com/ac130kz/nu-schedule\nApache 2.0 License\n\n© Mikhail Krassavin, 2020")
         b1 = QPushButton("Ok", d)
         vbox = QVBoxLayout()
         vbox.addWidget(l1)
@@ -390,10 +390,12 @@ class UI(QWidget):
     def initui(self):
         """ Main window UI """
 
-        # Defining labels
+        # Defining labels and a progress bar
         # -------------------------------------
         self.label = QLabel(self)
         self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.hide()
         if not self.finallist:
             self.label.setText("Data was not loaded")
 
@@ -415,6 +417,7 @@ class UI(QWidget):
         grid.addWidget(help_button)
         grid.addWidget(about_button)
         grid.addWidget(self.label)
+        grid.addWidget(self.progress_bar)
         grid.addWidget(gen_button)
         self.setLayout(grid)
 
