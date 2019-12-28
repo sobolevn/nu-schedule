@@ -9,5 +9,5 @@ jobs:
 
     steps:
     - name: wemake-python-styleguide
-      uses: wemake-services/wemake-python-styleguide@0.13.1
+      uses: wemake-services/wemake-python-styleguide@0.13.3
 
